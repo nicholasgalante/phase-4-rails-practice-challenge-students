@@ -1,36 +1,38 @@
 class InstructorsController < ApplicationController
-   def index
-      instructors = Instructor.all 
-      render json: instructors, status: :ok
-   end
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
-   def show
-      instructor = Instructor.find(params[:id])
-      render json: instructor, status: :ok
-   end
+  def index
+    instructors = Instructor.all
+    render json: instructors, status: :ok
+  end
 
-   def update
-      instructor = Instructor.find(params[:id])
-      if instructor
-         instructor.update(instructor_params)
-      else 
-         render json: { errror: "Instructor not found"}, status: :not_found
-      end
-   end
+  def show
+    instructor = find_instructor
+    render json: instructor, status: :ok
+  end
 
-   def destroy
-      instructor = Instructor.find(params[:id])
-      if instructor
-      instructor.destroy
-      render json: {}
-      else 
-         render json: { errror: "Instructor not found"}, status: :not_found
-      end
-   end
+  def update
+    instructor = find_instructor
+    instructor.update(instructor_params)
+  end
 
-   private
+  def destroy
+    instructor = find_instructor
+    instructor.destroy
+    render json: {}
+  end
 
-   def instructor_params
-      params.permit(:name)
-   end
+  private
+
+  def find_instructor
+    Instructor.find(params[:id])
+  end
+
+  def instructor_params
+    params.permit(:name)
+  end
+
+  def render_not_found_response
+    render json: { error: "Instructor not found" }, status: :not_found
+  end
 end
